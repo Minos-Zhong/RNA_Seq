@@ -1,0 +1,63 @@
+####################################################################################### Method 1 #########################################################################
+gunzip  gencode.vM25.chr_patch_hapl_scaff.annotation.gtf.gz 
+vim gtf_geneid2symbol_gencode.sh
+##################以下为.sh文件内容
+gtf="gencode.vM25.chr_patch_hapl_scaff.annotation.gtf"
+### gene_id to gene_name
+grep 'gene_id' $gtf | awk -F 'gene_id \"' '{print $2}' |awk -F '\"' '{print $1}' >gene_id_tmp
+grep 'gene_id' $gtf | awk -F 'gene_name \"' '{print $2}' |awk -F '\"' '{print $1}' >gene_name_tmp
+paste gene_id_tmp gene_name_tmp >last_tmp
+uniq last_tmp >g2s_vm25_gencode.txt
+rm *_tmp
+bash gtf_geneid2symbol_gencode.sh
+
+
+####################################################################################### Method 2 #########################################################################
+###环境设置
+library(tidyverse) # ggplot2 stringer dplyr tidyr readr purrr  tibble forcats
+library(data.table) #多核读取文件
+head(counts)  #counts是需要转换ensembl_id的表达矩阵
+
+##从gtf文件提取信息,获得gencode的基因id对应symbol的ids矩阵
+ids <- data.frame(geneid=rownames(counts),
+                    median=apply(counts,1,median)) #计算基因表达中位数，用于之后排序
+g2s <- fread('g2s_vm25_gencode.txt',header = F,data.table = F) #载入从gencode的gtf文件中提取的信息文件
+colnames(g2s) <- c("geneid","symbol")
+  
+table(ids$geneid %in% g2s$geneid) #查看需要转化的geneid在g2s的匹配情况
+ids <- ids[ids$geneid %in% g2s$geneid,] #取出在gencode数据库的gtf注释中能找到的geneid
+ids$symbol <- g2s[match(ids$geneid,g2s$geneid),2] #match返回其第二个参数中第一个参数匹配的位置,把g2s的geneid按照ids$geneid的顺序一个个取出来，从而得到ids$symbol这一列
+ids <- ids[order(ids$symbol,ids$median,decreasing = T),] #把ids$symbol按照ids$median由大到小排序
+ 
+##去重复
+dim(ids); table(duplicated(ids$symbol)) #统计查看重复的symbol
+#[1] 56262     3
+#FALSE  TRUE 
+#55492   770
+ids <- ids[!duplicated(ids$symbol),]#取出不重复的ids$symbol
+dim(ids); table(duplicated(ids$symbol))
+#[1] 55492     3
+#FALSE 
+#55492 
+  
+##转化geneid为symbol 
+counts <- counts[rownames(ids),] #取出表达矩阵中ids有的行  
+rownames(counts) <- ids[match(rownames(counts),ids$geneid),"symbol"]  #根据geneid和symbol进行匹配
+head(counts)
+
+library(tidyverse) # ggplot2 stringer dplyr tidyr readr purrr  tibble forcats
+library(data.table) #多核读取文件
+
+g2s <- fread('g2s_vm25_gencode.txt',header = F,data.table = F) #载入从gencode的gtf文件中提取的信息文件
+colnames(g2s) <- c("geneid","symbol")
+  
+symbol <- g2s[match(rownames(counts),g2s$geneid),"symbol"] #匹配counts行名对应的symbol
+table(duplicated(symbol))
+#FALSE  TRUE 
+#55492   770 
+  
+##使用aggregate根据symbol列中的相同基因进行合并 
+counts <- aggregate(counts, by=list(symbol), FUN=sum)
+counts <- column_to_rownames(counts,'Group.1')
+dim(counts)
+#[1] 55492     4
