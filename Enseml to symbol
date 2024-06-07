@@ -1,4 +1,4 @@
-####################################################################################### Method 1 #########################################################################
+############################################################################# Using gtf file #########################################################################
 gunzip  gencode.vM25.chr_patch_hapl_scaff.annotation.gtf.gz 
 vim gtf_geneid2symbol_gencode.sh
 ##################以下为.sh文件内容
@@ -11,8 +11,6 @@ uniq last_tmp >g2s_vm25_gencode.txt
 rm *_tmp
 bash gtf_geneid2symbol_gencode.sh
 
-
-####################################################################################### Method 2 #########################################################################
 ###环境设置
 library(tidyverse) # ggplot2 stringer dplyr tidyr readr purrr  tibble forcats
 library(data.table) #多核读取文件
@@ -61,3 +59,39 @@ counts <- aggregate(counts, by=list(symbol), FUN=sum)
 counts <- column_to_rownames(counts,'Group.1')
 dim(counts)
 #[1] 55492     4
+
+
+######################################################################## Using biomaRt #########################################################################
+counts <- raw
+ensembl_ids <- rownames(counts)
+
+library(biomaRt)
+library(dplyr)
+library(tidyverse) # ggplot2 stringer dplyr tidyr readr purrr  tibble forcats
+
+mart <- useMart("ensembl","hsapiens_gene_ensembl")
+dataset = listDatasets(mart)
+mydataset = useDataset("hsapiens_gene_ensembl",mart = mart)
+
+hg_symbols <- getBM(attributes=c('ensembl_gene_id','external_gene_name'), 
+                    filters = 'ensembl_gene_id', values = ensembl_ids, mart = mydataset)
+
+hg_symbols <- hg_symbols[which(hg_symbols$external_gene_name != ""),]
+
+symbol <- hg_symbols[match(rownames(counts),hg_symbols$ensembl_gene_id),"external_gene_name"] #匹配counts行名对应的symbol
+
+table(duplicated(symbol))
+
+##使用aggregate根据symbol列中的相同基因进行合并 
+counts <- aggregate(counts, by=list(symbol), FUN=sum)
+counts <- column_to_rownames(counts,'Group.1')
+dim(counts)
+
+counts[1:5,1:5]
+# counts <- mutate_all(counts, as.numeric)
+
+write.csv(counts,'./01_preprocess/counts.csv')
+
+
+################ reference ######################
+https://zhuanlan.zhihu.com/p/545090165
