@@ -75,3 +75,12 @@ trim_galore -q 25 --phred33 --length 36 --stringency 3 --paired -o ./01_qc ERR11
 nohup fastqc -t 12 -o ./ SRR*_trimmed.fq.gz > qc_trimmed.log 2>&1 & 
 # 02开始multiqc
 nohup multiqc *trimmed_fastqc.zip -o ./ > ./mtqc_trim.log 2>&1 &
+
+########################### 定量 ####################
+# 下载基因组注释文件
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_46/gencode.v46.annotation.gtf.gz
+gunzip gencode.v46.annotation.gtf.gz
+
+conda install subread -y
+##双端
+nohup featureCounts -T 5 -p -t exon -g gene_id  -a ./gencode.v46.annotation.gtf -o  ./all.id.txt *bam 1>counts.id.log 2>&1 &
