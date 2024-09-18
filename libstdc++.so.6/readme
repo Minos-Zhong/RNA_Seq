@@ -1,0 +1,3 @@
+- 首先找到你的环境的目录下的lib文件夹： `~/anaconda3/envs/your_env/lib/`
+- 把下载的对应版本的libstdc++.so.6拷贝进去
+- 创建软连接: `ln -s libstdc++.so.6.0.29 libstdc++.so.6`
