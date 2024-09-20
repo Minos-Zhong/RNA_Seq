@@ -15,7 +15,7 @@ conda install sra-tools
 conda update sra-tools
 
 #批量下载
-cat SRR.txt |while read id;do (prefetch -X 100G $id &);done
+cat SRR.txt |while read id;do (prefetch -X 100G $id );done
 
 # 1.批量将SRA文件转换fastq文件
 for folder in SRR*; do
@@ -52,7 +52,7 @@ ll /home/xb/anaconda3/envs/download/etc/asperaweb_id_dsa.openssh
 
 cat /sda/zgy/01_bulk/epilepsy/PRJEB63322/00_raw/fq.txt | while read id
 do
-ascp -QT -l 300m -P33001 -i /home/xb/anaconda3/envs/download/etc/asperaweb_id_dsa.openssh era-fasp@fasp.sra.ebi.ac.uk:/vol1/fastq/ERR115/042/ERR11580642/ERR11580642_1.fastq.gz  /sda/zgy/01_bulk/epilepsy/PRJEB63322/00_raw
+ascp -QT -l 300m -P33001 -i /home/xb/anaconda3/envs/download/etc/asperaweb_id_dsa.openssh $id  /sda/zgy/01_bulk/CTE_2/00_raw
 done
 
 ascp -QT -l 300m -P33001 -i /home/xb/anaconda3/envs/download/etc/asperaweb_id_dsa.openssh era-fasp@fasp.sra.ebi.ac.uk:/vol1/fastq/ERR115/039/ERR11580639/ERR11580639_2.fastq.gz  /sda/zgy/01_bulk/epilepsy/PRJEB63322/00_raw
