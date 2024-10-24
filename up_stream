@@ -114,7 +114,7 @@ done
 wait
 ###################
 # 运行脚本
-bash trim.sh
+nohup bash trim.sh &
 
 trim_galore -q 25 --phred33 --length 36 --stringency 3 --paired -o ./ ERR11580639_1.fastq.gz ERR11580639_2.fastq.gz
 
