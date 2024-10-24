@@ -79,7 +79,7 @@ paste gz1 gz2 > config
 vim trim.sh
 
 # trim.sh中的代码
-dir=/sda/zgy/01_bulk/epilepsy/ERR11580636/01_qc
+dir=/sda/zgy/01_bulk/CTE_2/01_qc/
 cat config |while read id
 do
       arr=${id}
@@ -87,7 +87,32 @@ do
       fq2=${arr[1]}
       nohup trim_galore -q 25 --phred33 --length 36 --stringency 3 --paired -o $dir $fq1 $fq2 > ./trim.log 2>&1 &
 done
+########### 5 in a time ############
+dir=/sda/zgy/01_bulk/CTE_2/01_qc/
+cat config | while read id; do
+    arr=(${id})  # 使用括号将 `id` 分割为数组
+    fq1=${arr[0]}
+    fq2=${arr[1]}
+    
+    # 创建独特的日志文件名，使用 ID 作为文件名的一部分
+    log_file="./trim_${fq1##*/}.log"  # 从 fq1 中提取文件名
+       
+    # 启动 trim_galore 的后台进程
+    nohup trim_galore -q 25 --phred33 --length 36 --stringency 3 --paired -o $dir $fq1 $fq2 > $log_file 2>&1 &
+    
+    # 计数器
+    count=$((count + 1))
+    
+    # 每处理 5 个文件就等待所有后台进程完成
+    if [ $count -eq 5 ]; then
+        wait  # 等待所有后台进程完成
+        count=0  # 重置计数器
+    fi
+done
 
+# 等待最后一批未完成的后台进程
+wait
+###################
 # 运行脚本
 bash trim.sh
 
