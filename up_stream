@@ -78,15 +78,7 @@ paste gz1 gz2 > config
 
 vim trim.sh
 
-# trim.sh中的代码
-dir=/sda/zgy/01_bulk/CTE_2/01_qc/
-cat config |while read id
-do
-      arr=${id}
-      fq1=${arr[0]}
-      fq2=${arr[1]}
-      nohup trim_galore -q 25 --phred33 --length 36 --stringency 3 --paired -o $dir $fq1 $fq2 > ./trim.log 2>&1 &
-done
+
 ########### 5 in a time ############
 dir=/sda/zgy/01_bulk/CTE_2/01_qc/
 cat config | while read id; do
@@ -104,7 +96,7 @@ cat config | while read id; do
     count=$((count + 1))
     
     # 每处理 5 个文件就等待所有后台进程完成
-    if [ $count -eq 5 ]; then
+    if [ $count -eq 10 ]; then
         wait  # 等待所有后台进程完成
         count=0  # 重置计数器
     fi
@@ -114,7 +106,7 @@ done
 wait
 ###################
 # 运行脚本
-nohup bash trim.sh &
+nohup bash trim.sh > trim.log 2>&1 &
 
 trim_galore -q 25 --phred33 --length 36 --stringency 3 --paired -o ./ ERR11580639_1.fastq.gz ERR11580639_2.fastq.gz
 
