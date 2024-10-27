@@ -50,10 +50,26 @@ which ascp 
 # 密钥
 ll /home/xb/anaconda3/envs/download/etc/asperaweb_id_dsa.openssh
 
-cat /sda/zgy/01_bulk/epilepsy/PRJEB63322/00_raw/fq.txt | while read id
+cat /sda/zgy/01_bulk/CTE_2/01_qc/bad/fq2.txt | while read id
 do
-ascp -QT -l 300m -P33001 -i /home/xb/anaconda3/envs/download/etc/asperaweb_id_dsa.openssh $id  /sda/zgy/01_bulk/CTE_2/00_raw
+/home/xb/anaconda3/envs/zgy_up/bin/ascp -QT -l 300m -P33001 -i /home/xb/anaconda3/envs/download/etc/asperaweb_id_dsa.openssh era-fasp@$id /sda/zgy/01_bulk/CTE_2/01_qc/bad
 done
+
+###########
+#!/bin/bash
+
+# 定义输入文件和目标目录
+input_file="/sda/zgy/01_bulk/CTE_2/01_qc/bad/fq2.txt"
+target_dir="/sda/zgy/01_bulk/CTE_2/01_qc/bad"
+ascp_path="/home/xb/anaconda3/envs/zgy_up/bin/ascp"
+aspera_key="/home/xb/anaconda3/envs/download/etc/asperaweb_id_dsa.openssh"
+
+# 从文件中读取 ID 并执行 ascp 命令
+while read -r id; do
+    echo "Downloading from era-fasp@$id to $target_dir"
+    $ascp_path -QT -l 300m -P33001 -i $aspera_key "era-fasp@$id" "$target_dir"
+done < "$input_file"
+##############
 
 ascp -QT -l 300m -P33001 -i /home/xb/anaconda3/envs/download/etc/asperaweb_id_dsa.openssh era-fasp@fasp.sra.ebi.ac.uk:/vol1/fastq/ERR115/039/ERR11580639/ERR11580639_2.fastq.gz  /sda/zgy/01_bulk/epilepsy/PRJEB63322/00_raw
 
