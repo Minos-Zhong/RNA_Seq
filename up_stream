@@ -143,60 +143,10 @@ tar -zxvf grch38_genome.tar.gz
 vim hisat2bam.sh
 ls *fq.gz | cut -d "_" -f 1 |while read id
 do 
-hisat2 -p 6 -x /sda/zgy/00_ref/grch38/genome  -1 ${id}_1_val_1.fq.gz -2 ${id}_2_val_2.fq.gz | samtools sort -@ 6 -o /sda/zgy/01_bulk/epilepsy/PRJEB63322/02_align/${id%%_*}.bam
+hisat2 -p 6 -x /sda/zgy/00_ref/grch38/genome  -1 ${id}_1_val_1.fq.gz -2 ${id}_2_val_2.fq.gz | samtools sort -@ 10 -o /sdb/zgy/01_bulk/CTE_2/02_align/${id%%_*}.bam
 done
 
 nohup bash hisat2bam.sh > hisat2bam.log 2>&1 &
-
-#####脚本
-############################
-echo -e  " \n \n \n 333#  Align !!! hisat2 !!!\n \n \n "
-date
-########set#### ###set#### ###set####   
-index='/sda/zgy/00_ref/grch38/genome'
-
-mkdir  -p   ~/test/align/flag
-cd ~/test/align/
-pwd
-cat ~/test/idname | while read id
-do
-         echo "333#  ${id} ${id} ${id}  is on the hisat2 Working !!!"
-################ paired ###############################         
-            hisat2 -t -p 12 -x  $index \
-       -1 ~/test/clean/${id}_*1*gz  \
-       -2  ~/test/clean/${id}_*2*gz  -S  ${id}.sam
-######################################################
-################Single################################
-#              hisat2 -t -p 12 -x  $index  \
-#                     -U ~/test/clean/${id}_trimmed.fq.gz \
-#                     -S  ./${id}.sam  
-
-########################################################           
-
-### sam2bam and remove sam ###
-    echo -e  " ${id} sam2bam and remove sam   "
-    samtools sort -@ 12 -o  ~/test/align/${id}_sorted.bam  ${id}.sam
-    rm ${id}.sam
-done
-
-#### samtools index and flagstat ####
-echo -e  " \n \n \n samtools index and flagstat \n  " 
-cd -p  ~/test/align/flag
-pwd
-#ls ~/test/align/*.bam | xargs  -i  samtools index  -@  12  {}    
-ls ~/test/align/*.bam  | while read id ;\
-do
-        samtools flagstat -@ 12 $id > $(basename $id '.bam').flagstat
-done
-multiqc ./
-
-echo -e " \n \n \n  333# ALL  Work Done !!!\n \n \n "
-date
-
-nohup bash 3_align2sam2bam_hisat2.sh >log_3 2>&1 &
-
-
-
 
 ########################### 定量 ####################
 # 下载基因组注释文件
