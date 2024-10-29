@@ -143,10 +143,18 @@ tar -zxvf grch38_genome.tar.gz
 vim hisat2bam.sh
 ls *fq.gz | cut -d "_" -f 1 |while read id
 do 
-hisat2 -p 6 -x /sda/zgy/00_ref/grch38/genome  -1 ${id}_1_val_1.fq.gz -2 ${id}_2_val_2.fq.gz | samtools sort -@ 10 -o /sdb/zgy/01_bulk/CTE_2/02_align/${id%%_*}.bam
+hisat2 -p 6 -x /sda/zgy/00_ref/grch38/genome  -1 ${id}_1_val_1.fq.gz -2 ${id}_2_val_2.fq.gz | samtools sort -@ 6 -o /sdb/zgy/01_bulk/CTE_2/02_align/${id%%_*}.bam
 done
 
 nohup bash hisat2bam.sh > hisat2bam.log 2>&1 &
+
+nohup hisat2 -p 6 -x /sda/zgy/00_ref/grch38/genome  -1 SP_T6_1_val_1.fq.gz -2 SP_T6_2_val_2.fq.gz | samtools sort -@ 6ll -o /sdb/zgy/01_bulk/CTE_2/02_align/SP_T6.bam > SP_T6.log 2>&1 &
+
+
+ls *fq.gz | cut -d "_" -f 1,2 | sort -u | while read id
+do 
+    hisat2 -p 6 -x /sda/zgy/00_ref/grch38/genome -1 ${id}_1_val_1.fq.gz -2 ${id}_2_val_2.fq.gz | samtools sort -@ 6 -o /sdb/zgy/01_bulk/CTE_2/02_align/${id}.bam
+done
 
 ########################### 定量 ####################
 # 下载基因组注释文件
