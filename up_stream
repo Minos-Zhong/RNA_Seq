@@ -124,8 +124,7 @@ wait
 # 运行脚本
 nohup bash trim.sh > trim.log 2>&1 &
 
-trim_galore -q 25 --phred33 --length 36 --stringency 3 --paired -o ./ ERR11580639_1.fastq.gz ERR11580639_2.fastq.gz
-
+trim_galore -q 25 --phred33 --length 36 --stringency 3 --paired -o ./ ERR1363368_1.fastq.gz ERR1363368_2.fastq.gz
 #三:质控后数据也需要用fastqc与multiqc看看质控效果
 # 01批量fastqc
 nohup fastqc -t 12 -o ./ SRR*_trimmed.fq.gz > qc_trimmed.log 2>&1 & 
