@@ -164,3 +164,24 @@ gunzip gencode.v46.annotation.gtf.gz
 conda install subread -y
 ##双端
 nohup featureCounts -T 5 -p -t exon -g gene_id  -a /sda/zgy/00_ref/Homo_sapiens.GRCh38.113.gtf -o  ./all.id2.txt /sdb/zgy/01_bulk/CTE_2/02_align/*bam >counts.id2.log 2>&1 &
+
+################################ 顺便获取ensembl symbol对应文件 ##############
+
+vim gtf_geneid2symbol_gencode.sh
+#提取gtf注释文件中gene_id等与gene_name的对应关系,便于下游id转换
+gtf="gencode.vM25.chr_patch_hapl_scaff.annotation.gtf"
+
+### gene_id to gene_name
+grep 'gene_id' $gtf | awk -F 'gene_id \"' '{print $2}' |awk -F '\"' '{print $1}' >gene_id_tmp
+grep 'gene_id' $gtf | awk -F 'gene_name \"' '{print $2}' |awk -F '\"' '{print $1}' >gene_name_tmp
+paste gene_id_tmp gene_name_tmp >last_tmp
+uniq last_tmp >g2s_vm25_gencode.txt
+rm *_tmp
+
+### transcript_id to gene_name
+grep 'transcript_id' $gtf | awk -F 'transcript_id \"' '{print $2}' |awk -F '\"' '{print $1}' >gene_id_tmp
+grep 'transcript_id' $gtf | awk -F 'gene_name \"' '{print $2}' |awk -F '\"' '{print $1}' >gene_name_tmp
+paste gene_id_tmp gene_name_tmp >last_tmp
+uniq last_tmp >t2s_vm25_gencode.txt
+rm *_tmp
+bash gtf_geneid2symbol_gencode.sh
