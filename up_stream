@@ -163,4 +163,4 @@ gunzip gencode.v46.annotation.gtf.gz
 
 conda install subread -y
 ##双端
-nohup featureCounts -T 5 -p -t exon -g gene_id  -a /sda/zgy/00_ref/gencode.v46.annotation.gtf -o  ./all.id.txt /sdb/zgy/01_bulk/CTE_2/02_align/*bam >counts.id.log 2>&1 &
+nohup featureCounts -T 5 -p -t exon -g gene_id  -a /sda/zgy/00_ref/Homo_sapiens.GRCh38.113.gtf -o  ./all.id2.txt /sdb/zgy/01_bulk/CTE_2/02_align/*bam >counts.id2.log 2>&1 &
