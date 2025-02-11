@@ -92,6 +92,46 @@ counts[1:5,1:5]
 
 write.csv(counts,'./01_preprocess/counts.csv')
 
+########################################################################## symbol to ensembl ################################################################################
+BiocManager::install('biomaRt')
+install.packages('tidyverse')
+library(biomaRt)
+library(dplyr)
+library(tidyverse)
+
+# 假设你的 counts 矩阵的行名是基因符号
+gene_symbols <- rownames(counts)
+
+# 连接到 Ensembl 数据库
+mart <- useMart("ensembl", "hsapiens_gene_ensembl")
+dataset = listDatasets(mart)
+mydataset = useDataset("hsapiens_gene_ensembl", mart = mart)
+
+# 查询 Ensembl ID
+hg_ensembl <- getBM(attributes = c('ensembl_gene_id', 'external_gene_name'), 
+                   filters = 'external_gene_name', values = gene_symbols, mart = mydataset)
+
+head(hg_ensembl)
+# 过滤掉没有对应 Ensembl ID 的基因
+hg_ensembl <- hg_ensembl[which(hg_ensembl$ensembl_gene_id != ""),]
+
+# 根据 Ensembl ID 进行匹配
+ensembl_ids <- hg_ensembl[match(rownames(counts), hg_ensembl$external_gene_name), "ensembl_gene_id"]
+
+# 检查是否有重复的 Ensembl ID
+table(duplicated(ensembl_ids))
+
+# 使用 aggregate 根据 Ensembl ID 列中的相同基因进行合并
+counts <- aggregate(counts, by = list(ensembl_ids), FUN = sum)
+counts <- column_to_rownames(counts, 'Group.1')
+dim(counts)
+
+# 查看前5行前5列
+counts[1:5, 1:5]
+
+# 保存结果到 CSV 文件
+write.table(counts,  file="./Spatial_count_human_esb.txt", sep="\t", quote=F, col.names=NA)
+
 
 ################ reference ######################
 https://zhuanlan.zhihu.com/p/545090165
